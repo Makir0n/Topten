@@ -11,33 +11,19 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 
-/**
- *
- * でもいっぱいデータベース引くの時間もったいないよな
- *
- * @author makir0n
- *
- * 先に人リストつくってからソートするか10こあってるか
- * ソートしたやつが人かどうか判断していくかなかったら永遠と
- */
+
 public class Alive {
 
     ArrayList<Page> page_rank = new ArrayList();
-    //ArrayList<Integer> aliveId = new ArrayList();
+
     ArrayList<People> aliveMan = new ArrayList();
 
-    //int lim;
-
     Alive(ArrayList<Page> list) {
-        //System.out.println(list.get(0).getValue());
         page_rank = list;
-        //lim = people_num;
         setAliveman();//aliveManがセットされる
-        //System.out.println(aliveMan);
         //ソートする
         SortPeople st = new SortPeople(aliveMan);
         aliveMan = st.getSortedPeople();
-        //System.out.println(aliveMan);
     }
 
     //idからtitleだしてtitleのfromに存命人物があるか
@@ -58,9 +44,7 @@ public class Alive {
             }
 
             //存命人物からリンクがきてる人かを調べる
-            //idのtitleからfromに存命人物のがあるか
             //idのfrom一覧
-            //lst.add(new Page(i, values.get(i) * 1000));
             rsList = stmt.executeQuery("SELECT * FROM page INNER JOIN pagelinks ON page.page_title = pagelinks.pl_title where pagelinks.pl_from =" + AliveId.get(0) + ";");
             while (rsList.next()) {
                 String name = new String(rsList.getBytes("page_title"), "UTF-8");
@@ -68,24 +52,14 @@ public class Alive {
                 //このidと一致するスコアも入れちゃうか
                //一致するindexが得られるからそのindexのスコアを
                 
-                //存命人物のidと名前と評価値
-                //ランキング順や・・・ 
                 //System.err.println(id);//idが4,6,7,9,が人であることが判明→それらの評価も一緒に登録したい
-                //System.out.println(page_rank);//String
                 ArrayList<Integer> page_rank_id = new ArrayList<>();
                 for( Page page: page_rank){
                     page_rank_id.add(page.getId());
                 }
-                //String strid = String.valueOf(id);
-               // System.out.println(strid);
                 int index = page_rank_id.indexOf(id);
                 double score = page_rank.get(Integer.valueOf(index)).getValue();
-                //System.out.println(score);
                 aliveMan.add(new People(id, name,score));
-                //System.out.print(id + ",");
-                //String from = null;
-                //from = new String(rsList.getBytes("page_id"), "UTF-8");
-                //System.out.println(aliveMan);
             }
             con.close();
         } catch (Exception e) {

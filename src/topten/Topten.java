@@ -17,59 +17,42 @@ import java.util.ArrayList;
  */
 public class Topten {
 
-    /**
-     * 5*5の行列 5ページ 7つのエッジ
-     *
-     * @param args the command line arguments
-     */
     public static void main(String[] args) {
         // TODO code application logic here
 
-        //int edge_num = 0;
         ArrayList<Integer> totalPage = new ArrayList<Integer>();
         ArrayList<Integer> tosID = new ArrayList<Integer>();
         ArrayList<Integer> fromsID = new ArrayList<Integer>();
 
-        String jdbc_url = "jdbc:mysql://localhost/LINEtest";
-        String user = "root";
-        String password = "@xes";
+        String jdbc_url = "jdbc:mysql://localhost/DBname";
+        String user = "name";
+        String password = "pass";
         ResultSet rsLink;
         
-        int outNum = 3;
-        /*
-         リンク多すぎるやつはリンク集やし
-        
-         page_counter
-         このフィールドが増加するいくつかのサイト 
-         ( 例えば Wikimedia サイト )は、パフォーマンスを増やすようために無効にしていること
-         考慮すると不公平か．．．
-         */
+        //上位10名を出力したい
+        int outNum = 10;
+
         try (Connection con = DriverManager.getConnection(jdbc_url, user, password);
                 Statement stmt = con.createStatement()) {
 
-            //int link_num = 0;
             //id同士の関連
             rsLink = stmt.executeQuery("SELECT * FROM page INNER JOIN pagelinks ON page.page_title = pagelinks.pl_title;");
             while (rsLink.next()) {
                 tosID.add(rsLink.getInt("page_id"));
                 fromsID.add(rsLink.getInt("pl_from"));
-                //link_num++;
             }
             //indexとpage_idの対応付け
             rsLink = stmt.executeQuery("SELECT * FROM page");
             for (int i = 0; rsLink.next() == true; i++) {
                 totalPage.add(rsLink.getInt("page_id"));
             }
-            //System.out.println(totalPage);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //System.out.println(tosID);
         //行列でに対応できるようにidをindex同士の関係にする
         ArrayList<Integer> tos = new ArrayList<Integer>();
         ArrayList<Integer> froms = new ArrayList<Integer>();
-        //データベースidの型・・・？
         for (int i = 0; i < tosID.size(); i++) {
             tos.add(totalPage.indexOf(tosID.get(i)));
         }
@@ -78,19 +61,9 @@ public class Topten {
         }
 
         CulMetrix cm = new CulMetrix(tos, froms, totalPage.size());
-        //System.out.println(cm.getValues());
-        //Sort st = new Sort(totalPage.size(), cm.getValues());
         Sort st = new Sort(cm.getValues());
-        ArrayList<Page> pageRank = st.getBestID();//<Page>いらんのか
+        ArrayList<Page> pageRank = st.getBestID();
 
-        /*
-         for (int i = 0; i < pageRank.size(); i++) {
-         //int index = pageRank.get(i).getIndex();
-         //pageRankID.add(totalPage.indexOf(pageRank.get(i)));
-         System.out.print(pageRank.get(i).getPageId());
-         System.out.println("score:" + pageRank.get(i).getValue());
-         }
-         */
         //indexをidに戻す
         ArrayList<Page> pageRankID = pageRank;
         for (int i = 0; i < pageRank.size(); i++) {
@@ -98,20 +71,9 @@ public class Topten {
             int transID = totalPage.get(pageRank.get(i).getPageIndex());
             pageRankID.get(i).setPageId(transID);
         }
-        
-        /*
-         for (int i = 0; i < pageRankID.size(); i++) {
-         //for (int i = 0; i < pageRank.size(); i++) {
-         //int index = pageRank.get(i).getIndex();
-         //pageRankID.add(totalPage.indexOf(pageRank.get(i)));
-         System.out.print(pageRankID.get(i).getId());
-         System.out.println("score:" + pageRankID.get(i).getValue());
-         }
-                */
-        
-        //ランキングつくるけど，同点のときは？
 
-        //存命人物を３つ出しますか
+        //ＰａｇｅＲａｎｋ．gitから書き足した部分
+        //存命人物を１０つ出力
         Alive alive = new Alive(pageRankID);
         for(int i = 0; i < outNum ; i++){
             System.out.println(alive.getAlives().get(i).getName());
